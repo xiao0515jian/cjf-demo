@@ -16,9 +16,27 @@ import java.util.*;
  * @author : chenjianfeng
  * @date : 2023/1/14
  */
-public class TestServiceDemo {
+public class CalAreaMonth {
 
 
+    // 拆分大区
+    @Test
+    public void testOuterAreaMonth() throws IOException, InvalidFormatException {
+        calOuterAreaMonth();
+    }
+
+    // 拆分小区
+    @Test
+    public void testOuterSmallAreaMonth() throws IOException, InvalidFormatException {
+        calOuterSmallAreaMonth();
+    }
+
+    // 拆分经销商
+    @Test
+    public void testOuterDealerMonth() throws IOException, InvalidFormatException {
+        List<InnerMonthReleaseVO> list = ReadExcelFileUtil.getInnerReleaseList();
+        calOuterDealerMonth(list);
+    }
 
     public List<AreaOuterMonthResponse> calOuterAreaMonth() throws IOException, InvalidFormatException {
         System.out.println("=================================大区拆分==================================");
@@ -92,14 +110,14 @@ public class TestServiceDemo {
         Integer hotCarTotal = importMonthMap.entrySet().stream().filter(data -> hotCars.contains(data.getKey()))
                 .mapToInt(Map.Entry::getValue).sum();
 
-        LinkedHashMap<String, LinkedHashMap<String, Integer>> resultMap = AakMathUtil.calculateOuterMonth(innerMonthAreaMap,importMonthMap);
+        LinkedHashMap<String, LinkedHashMap<String, Integer>> resultMap = MathUtil.calculateOuterMonth(innerMonthAreaMap,importMonthMap);
         System.out.println("大区计算");
         resultMap.forEach((k,v) -> {
             System.out.println(k+":"+ v);
         });
-        List<InnerMonthReleaseVO> innerMonthReleaseList = TestService1Demo.getInnerReleaseList();
+        List<InnerMonthReleaseVO> innerMonthReleaseList = ReadExcelFileUtil.getInnerReleaseList();
         // 横向调平
-        LinkedHashMap<String, LinkedHashMap<String, Integer>> rowResultMap = AakMathUtil.rowLeveling(resultMap,hotCarTotal,hotCars,importMonthMap, innerMonthReleaseList, RegionEnum.AREA.getCode());
+        LinkedHashMap<String, LinkedHashMap<String, Integer>> rowResultMap = MathUtil.rowLeveling(resultMap,hotCarTotal,hotCars,importMonthMap, innerMonthReleaseList, RegionEnum.AREA.getCode());
         System.out.println("横向调平");
         rowResultMap.forEach((k,v) -> {
             System.out.println(k+":"+ v);
@@ -107,12 +125,12 @@ public class TestServiceDemo {
 
         // 纵向调平
         System.out.println("纵向调平");
-        LinkedHashMap<String, LinkedHashMap<String, Integer>> colResultMap = AakMathUtil.colLeveling(rowResultMap,importMonthMap, innerMonthReleaseList, RegionEnum.AREA.getCode());
+        LinkedHashMap<String, LinkedHashMap<String, Integer>> colResultMap = MathUtil.colLeveling(rowResultMap,importMonthMap, innerMonthReleaseList, RegionEnum.AREA.getCode());
         colResultMap.forEach((k,v) -> {
             System.out.println(k+":"+ v);
         });
         // 最终调平
-        List<AreaOuterMonthResponse> result = AakMathUtil.finalLeveling(resultMap,colResultMap,RegionEnum.AREA.getCode());
+        List<AreaOuterMonthResponse> result = MathUtil.finalLeveling(resultMap,colResultMap,RegionEnum.AREA.getCode());
         System.out.println("最终结果:");
         StringBuilder temp1Value = null;
         for (AreaOuterMonthResponse data:result){
@@ -127,18 +145,6 @@ public class TestServiceDemo {
         System.out.println("车系:"+temp1Value);
         return result;
     }
-    // 拆分大区
-    @Test
-    public void testOuterAreaMonth() throws IOException, InvalidFormatException {
-        calOuterAreaMonth();
-    }
-
-    // 拆分小区
-    @Test
-    public void testOuterSmallAreaMonth() throws IOException, InvalidFormatException {
-
-        calOuterSmallAreaMonth();
-    }
 
     public List<AreaOuterMonthResponse> calOuterSmallAreaMonth() throws IOException, InvalidFormatException {
 
@@ -147,20 +153,20 @@ public class TestServiceDemo {
         List<AreaOuterMonthResponse> result = new ArrayList<>();
         List<AreaOuterMonthResponse> areaOuterMonthList = calOuterAreaMonth();
         LinkedHashMap<String,String> calculateCarSeriesCoefficient = calculateCarSeriesCoefficient();
-        List<InnerMonthReleaseVO> innerMonthReleaseList = TestService1Demo.getInnerReleaseList();
+        List<InnerMonthReleaseVO> innerMonthReleaseList = ReadExcelFileUtil.getInnerReleaseList();
         System.out.println("=================================小区拆分==================================");
 
         System.out.println("小区计算----------------------------------------------------------------------------");
         // 1、计算
-        LinkedHashMap<String, LinkedHashMap<String,Integer>> calculateResultMap = AakMathUtil.calculateSmallAreaOrDealerResultMap(
+        LinkedHashMap<String, LinkedHashMap<String,Integer>> calculateResultMap = MathUtil.calculateSmallAreaOrDealerResultMap(
                 innerMonthReleaseList,areaOuterMonthList,calculateCarSeriesCoefficient, RegionEnum.SMALL_AREA.getCode());
 
         // 2、大区-小区-车系 汇总
         LinkedHashMap<String,LinkedHashMap<String, LinkedHashMap<String, Integer>>> regionRelateSumMap =
-                AakMathUtil.convertSmallAreaResultToMap(innerMonthReleaseList,calculateResultMap);
+                MathUtil.convertSmallAreaResultToMap(innerMonthReleaseList,calculateResultMap);
 
         // list->map
-        LinkedHashMap<String,LinkedHashMap<String,Integer>> allAreaMonthMap = AakMathUtil.convertListToMap(areaOuterMonthList);
+        LinkedHashMap<String,LinkedHashMap<String,Integer>> allAreaMonthMap = MathUtil.convertListToMap(areaOuterMonthList);
         System.out.println("小区调平---------------------------------------------------------------------------");
         // 3、大区遍历
         regionRelateSumMap.forEach((k,v) -> {
@@ -172,7 +178,7 @@ public class TestServiceDemo {
                     new CarSeriesConfig(1l,"HS5","HS5",1),
                     new CarSeriesConfig(1l,"全新H5","全新H5",1)
             );
-            List<AreaOuterMonthResponse> list = AakMathUtil.levelingOuterMonth(v,carSeriesConfigList,
+            List<AreaOuterMonthResponse> list = MathUtil.levelingOuterMonth(v,carSeriesConfigList,
                     areaMonthMap, RegionEnum.SMALL_AREA.getCode(),innerMonthReleaseList);
             list.forEach(data -> data.setAreaId(k));
 
@@ -222,19 +228,10 @@ public class TestServiceDemo {
         importMonthMap.put("合计",10946); //31000
 
         innerMap.forEach((k,v) -> {
-            a.put(k,AakMathUtil.divide(String.valueOf(importMonthMap.get(k)),String.valueOf(v),3));
+            a.put(k, MathUtil.divide(String.valueOf(importMonthMap.get(k)),String.valueOf(v),3));
         });
 //        a.forEach((k,v) -> System.out.println(k+","+v));
         return a;
-    }
-
-    // 拆分经销商
-    @Test
-    public void testOuterDealerMonth() throws IOException, InvalidFormatException {
-
-        List<InnerMonthReleaseVO> list = TestService1Demo.getInnerReleaseList();
-
-        calOuterDealerMonth(list);
     }
 
     private void calOuterDealerMonth(List<InnerMonthReleaseVO> innerMonthReleaseList) throws IOException, InvalidFormatException {
@@ -251,14 +248,14 @@ public class TestServiceDemo {
         System.out.println("----------------------------------------------------------------------");
 
         // 1、计算
-        LinkedHashMap<String, LinkedHashMap<String,Integer>> calculateResultMap = AakMathUtil.calculateSmallAreaOrDealerResultMap(
+        LinkedHashMap<String, LinkedHashMap<String,Integer>> calculateResultMap = MathUtil.calculateSmallAreaOrDealerResultMap(
                 innerMonthReleaseList,smallAreaOuterMonthResponseList, calculateCarSeriesCoefficient, RegionEnum.DEALER.getCode());
         // 2、大区-小区-经销商-车系 汇总
         LinkedHashMap<String,LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap<String, Integer>>>> regionRelateSumMap =
-                AakMathUtil.convertDealerResultToMap(innerMonthReleaseList,calculateResultMap);
+                MathUtil.convertDealerResultToMap(innerMonthReleaseList,calculateResultMap);
 
         // list->map
-        LinkedHashMap<String,LinkedHashMap<String,Integer>> allSmallAreaMonthMap = AakMathUtil.convertListToDealerMap(smallAreaOuterMonthResponseList);
+        LinkedHashMap<String,LinkedHashMap<String,Integer>> allSmallAreaMonthMap = MathUtil.convertListToDealerMap(smallAreaOuterMonthResponseList);
 
         System.out.println("小区调平---------------------------------------------------------------------------");
         // 3、大区遍历
@@ -273,7 +270,7 @@ public class TestServiceDemo {
                         new CarSeriesConfig(1l,"HS5","HS5",1),
                         new CarSeriesConfig(1l,"全新H5","全新H5",1)
                 );
-                List<AreaOuterMonthResponse> list = AakMathUtil.levelingOuterMonth(v1,carSeriesConfigList,
+                List<AreaOuterMonthResponse> list = MathUtil.levelingOuterMonth(v1,carSeriesConfigList,
                         smallAreaMonthMap, RegionEnum.DEALER.getCode(), innerMonthReleaseList);
                 list.forEach(data -> {
                     data.setAreaId(k);

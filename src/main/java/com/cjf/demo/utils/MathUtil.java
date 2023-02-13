@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class AakMathUtil {
+public class MathUtil {
 
 
     public static Float rate(Float t1, Float t2) {
