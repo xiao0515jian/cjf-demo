@@ -1,6 +1,8 @@
 package com.cjf.demo.juint;
 
 import cn.hutool.core.lang.Assert;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cjf.demo.config.CommonConst;
 import com.cjf.demo.enums.FileTypeEnum;
@@ -13,13 +15,17 @@ import com.cjf.demo.service.MyPredicate;
 import com.cjf.demo.service.impl.FilterEmployeeByAge;
 import com.cjf.demo.service.impl.FilterEmployeeByWeight;
 import com.cjf.demo.utils.DateUtils;
+import com.cjf.demo.utils.IdUtils;
+import com.cjf.demo.utils.StringUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.text.*;
-import java.time.LocalDate;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -44,12 +50,27 @@ public class TestStream {
             new Employee(5,"赵六", 16, 77.77D),
             new Employee(6,"",19,50D),
             new Employee(7,"孙悟空",99,99999.0D),
-            new Employee(7,"孙悟空",99,99999.0D),
+            new Employee(6,"孙悟空",99,99999.0D),
             new Employee(7,"齐天大圣",99,99999.0D),
             new Employee(7,"齐天大圣",99,99999.0D),
             new Employee(7,"齐天大圣",99,99999.0D)
     );
     protected List<Area> areaList =(List<Area>) Arrays.asList(
+            new Area("北区","辽宁省", "沈阳市"),
+            new Area("北区","辽宁省", "大连市"),
+            new Area("北区","吉林省", "长春市"),
+            new Area("西区","云南省", "昆明市"),
+            new Area("西区","云南省", "曲靖市"),
+            new Area("北区","北京市", "北京市"),
+            new Area("西区","四川省", "成都市"),
+            new Area("东区","安徽省", "合肥市"),
+            new Area("南区","广东省", "佛山市"),
+            new Area("南区","广东省", "东莞市"),
+            new Area("南区","广东省", "广州市"),
+            new Area("南区","广东省", "深圳市")
+
+    );
+    protected List<Area> areaList1 =(List<Area>) Arrays.asList(
             new Area("北区","辽宁省", "沈阳市"),
             new Area("北区","辽宁省", "大连市"),
             new Area("北区","吉林省", "长春市"),
@@ -579,6 +600,120 @@ public class TestStream {
         }
         // 最终找到index 的位置，把值放进去
         list.set(index, x);
+    }
+
+//    @Test
+//    public void test31(){
+//        LinkedHashMap<Integer, List<Employee>>  auxMatStandardMap = arrayList.stream()
+//                .collect(Collectors.groupingBy(Employee::getId,
+//                        LinkedHashMap::new,Collectors.toList()));
+//        auxMatStandardMap.forEach((k,v) -> System.out.println(v));
+//        System.out.println(auxMatStandardMap);
+//    }
+
+    @Test
+    public void test32(){
+//        test321();
+        String a = "1,111,111.33";
+        LocalDate now = LocalDate.now();
+        Date curDate = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        java.sql.Date planGenerationDate = new java.sql.Date(1678204800000l);
+        boolean result = planGenerationDate.getTime() < curDate.getTime();
+        System.out.println(result);
+        //System.out.println(a.replace(",",""));
+    }
+
+    public static Date strToDate(String dateStr) {
+        Date result;
+        String format = "yyyy-MM-dd";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+        LocalDate date2 = LocalDate.parse(dateStr, formatter);
+        LocalDateTime dateTime = LocalDateTime.parse(dateStr,formatter);
+        long milleSecond = dateTime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+//        date2.
+        result = new Date(milleSecond);
+        return result;
+    }
+
+
+    public String test321(){
+        String a = "0.00";
+        if(StringUtils.isEmpty(a)){
+            return "";
+        }
+        int decimalDigit = 0;
+
+        BigDecimal value = new BigDecimal(a);
+
+        // 去掉小数点多余0
+        String trailingZerosValue = value.stripTrailingZeros().toString();
+
+        String[] values = trailingZerosValue.split("\\.");
+        if(values.length > 1){
+            // 获取小数点位数
+            decimalDigit = values[1].length();
+        }
+        System.out.println(StringUtil.valueToThousandFormat(a,decimalDigit,true));
+        return StringUtil.valueToThousandFormat(a,decimalDigit,true);
+    }
+
+    @Test
+    public void test322(){
+        String str1 = "[{\"auxMateriel1\":\"DCFC\",\"auxMateriel1Des\":\"随车辅材\",\"auxMateriel2\":\"SQ\",\"auxMateriel2Des\":\"色漆\",\"density\":\"16\",\"glueHeight\":\"15\",\"glueWidth\":\"14\",\"id\":\"b3ffbeb2aa56714410339471adbab15a\",\"levelCode\":\"B\",\"materialCode\":\"12345\",\"materialDes\":\"我是fffff\",\"normAuxId\":\"8494d87c0b11f5e7eaded69ab665cb62\",\"number\":\"3\",\"opportunityCode\":\"S-20230301-0011\",\"positionCode\":\"BCS\",\"positionDes\":\"白车身\",\"positionItemCode\":\"5000020-DD01\",\"price\":2,\"processCode\":\"MQ\",\"processDes\":\"面漆\",\"quota\":17,\"stationCode\":\"BCSZC\",\"stationDes\":\"白车身总成\",\"supplierCode\":\"www\",\"supplierDes\":\"我是w\",\"targetCost\":34,\"trackLength\":\"13\",\"unitCode\":\"12\",\"vehicleSeries\":\"EQM5\",\"vehicleType\":\"SED\",\"workmanship\":\"TZ\",\"workmanshipDes\":\"涂装\"}]";
+        String str2 = "";
+        System.out.println(compareToData(str1,str2));
+    }
+
+    @Test
+    public void test323(){
+        System.out.println(IdUtils.fastSimpleUUID());  //最常用
+        System.out.println(IdUtils.fastUUID());
+        System.out.println(IdUtils.randomUUID());
+        System.out.println(IdUtils.simpleUUID());
+    }
+
+    @Test
+    public void test324(){
+
+        System.out.println(new Date());
+        System.out.println(addDay(new Date(),1));
+    }
+
+    /**
+     * 日期增加天数
+     * @param date 日期
+     * @param number 天
+     * @return 结果日期
+     */
+    public static Date addDay(Date date,int number){
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, number);
+        return calendar.getTime();
+    }
+
+
+    public static boolean compareToData(String a, String b){
+        // 生成一个MD5加密计算摘要
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            // 计算md5函数
+            md.update(a.getBytes());
+            String s = new BigInteger(1, md.digest()).toString(16);
+
+            // 计算md5函数
+            MessageDigest md2 = MessageDigest.getInstance("MD5");
+            md2.update(b.getBytes());
+            String s1 = new BigInteger(1, md2.digest()).toString(16);
+
+            if(Objects.equals(s1,s)){
+                return true;
+            }
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+        return false;
     }
 
 
