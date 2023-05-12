@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: dev
+#  jackson:
+#    date-format: yyyy-mm-dd
+
+server:
+  port: 8867

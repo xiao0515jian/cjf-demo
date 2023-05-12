@@ -1,5 +1,6 @@
 package com.cjf.demo.juint;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Assert;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -16,7 +17,9 @@ import com.cjf.demo.service.impl.FilterEmployeeByAge;
 import com.cjf.demo.service.impl.FilterEmployeeByWeight;
 import com.cjf.demo.utils.DateUtils;
 import com.cjf.demo.utils.IdUtils;
+import com.cjf.demo.utils.JsonUtil;
 import com.cjf.demo.utils.StringUtil;
+import com.cjf.demo.vo.ProcessUpdateVo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StringUtils;
@@ -30,6 +33,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -48,12 +53,12 @@ public class TestStream {
             new Employee(4,"田七", 18, 49.33D),
             new Employee(3,"王五", 60, 66.66D),
             new Employee(5,"赵六", 16, 77.77D),
-            new Employee(6,"",19,50D),
-            new Employee(7,"孙悟空",99,99999.0D),
-            new Employee(6,"孙悟空",99,99999.0D),
-            new Employee(7,"齐天大圣",99,99999.0D),
-            new Employee(7,"齐天大圣",99,99999.0D),
-            new Employee(7,"齐天大圣",99,99999.0D)
+            new Employee(6,"孙悟空",19,50D),
+            new Employee(7,"齐天大圣",29,99999.0D),
+            new Employee(6,"孙悟空",39,99999.0D),
+            new Employee(7,"齐天大圣",49,99999.0D),
+            new Employee(8,"齐天大圣",59,99999.0D),
+            new Employee(9,"齐天大圣",99,99999.0D)
     );
     protected List<Area> areaList =(List<Area>) Arrays.asList(
             new Area("北区","辽宁省", "沈阳市"),
@@ -679,6 +684,30 @@ public class TestStream {
         System.out.println(addDay(new Date(),1));
     }
 
+    @Test
+    public void test325(){
+        int a = 2;
+        int result = 0;
+
+        switch (a){
+            case 1 :
+                result = result + a;
+            case 2 :
+                result = result + a * 2;
+            case 3 :
+                result = result + a * 3;
+        }
+
+        System.out.println(result);
+    }
+    @Test
+    public void test326(){
+        String str = "{\"payload\":\"{\\\"code\\\":\\\"VSP0113M001ZBB\\\",\\\"recordStatus\\\":1,\\\"processVersion\\\":\\\"V1.00\\\"}\",\"headers\":{\"id\":\"df9e008f-bacd-22c2-da7b-eebf1a66f32b\",\"timestamp\":1683537565380}}";
+        //channel.basicAck(message.getHeaders().get(MqttHeaders), false);
+        ProcessUpdateVo vo = JsonUtil.jsonToObject(str, ProcessUpdateVo.class);
+        System.out.println(JsonUtil.toJsonString(vo));
+    }
+
     /**
      * 日期增加天数
      * @param date 日期
@@ -714,6 +743,37 @@ public class TestStream {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Test
+    public void testAA1(){
+
+        Map<String,Employee> result = arrayList.stream()
+                .collect(Collectors.toMap(Employee::getName,
+                        Function.identity(), BinaryOperator.maxBy(Comparator.comparing(Employee::getId))));
+        result.forEach((k,v) -> {
+            System.out.println(v);
+        });
+
+    }
+
+    @Test
+    public void testAA2(){
+
+        Map<String,List<Employee>> result = arrayList.stream()
+                .collect(Collectors.groupingBy(a -> a.getId() +":"+ a.getName()));
+        result.forEach((k,v) -> {
+            System.out.println(k+":"+v);
+        });
+
+    }
+
+    @Test
+    public void testAA3(){
+
+        String str = "1,2,3";
+        List<String> list = Arrays.stream(str.split(",")).collect(Collectors.toList());
+        list.forEach(System.out::println);
     }
 
 
