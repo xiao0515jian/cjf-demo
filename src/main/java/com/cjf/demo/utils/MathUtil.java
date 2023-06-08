@@ -19,6 +19,70 @@ import java.util.stream.Collectors;
 
 public class MathUtil {
 
+    /**
+     * 除法
+     * @param n1 数字1
+     * @param n2 数字2
+     * @return 结果
+     */
+    public static String divideToString(String n1, String n2,int scale) {
+        Assert.notBlank(n1);
+        Assert.notBlank(n2);
+        BigDecimal b1 = new BigDecimal(n1);
+        BigDecimal b2 = new BigDecimal(n2);
+        if (b2.compareTo(BigDecimal.ZERO) == 0) {
+            return "0";
+        }
+        return b1.divide(b2,scale, RoundingMode.HALF_UP).toString();
+    }
+
+    /**
+     * 乘法
+     * @param n1 数字1
+     * @param n2 数字2
+     * @return 结果
+     */
+    public static String multiplyToString(String n1, String n2,int scale) {
+        Assert.notBlank(n1);
+        Assert.notBlank(n2);
+        BigDecimal b1 = new BigDecimal(n1);
+        BigDecimal b2 = new BigDecimal(n2);
+
+        return b1.multiply(b2).setScale(scale, RoundingMode.HALF_UP).toString();
+    }
+
+    /**
+     * 除法
+     * @param n1 数字1
+     * @param n2 数字2
+     * @return 结果
+     */
+    public static BigDecimal divideToDecimal(String n1, String n2, int scale) {
+        Assert.notBlank(n1);
+        Assert.notBlank(n2);
+        BigDecimal b1 = new BigDecimal(n1);
+        BigDecimal b2 = new BigDecimal(n2);
+        if (b2.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        return b1.divide(b2,scale, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 乘法
+     * @param n1 数字1
+     * @param n2 数字2
+     * @return 结果
+     */
+    public static BigDecimal multiplyToDecimal(String n1, String n2, int scale) {
+        Assert.notBlank(n1);
+        Assert.notBlank(n2);
+        BigDecimal b1 = new BigDecimal(n1);
+        BigDecimal b2 = new BigDecimal(n2);
+
+        return b1.multiply(b2).setScale(scale, RoundingMode.HALF_UP);
+    }
+
 
     public static Float rate(Float t1, Float t2) {
         if (t1 == null || t2 == null) {
