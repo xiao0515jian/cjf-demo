@@ -210,7 +210,7 @@ public class TestStream {
     @Test
     public void test8(){
         List<Employee> employees = arrayList.stream().sorted(Comparator.comparing(Employee::getAge)).collect(Collectors.toList());
-        employees.stream().forEach(System.out::println);
+        employees.forEach(System.out::println);
     }
     /*
      * 字符串返回结果
@@ -774,6 +774,31 @@ public class TestStream {
         String str = "1,2,3";
         List<String> list = Arrays.stream(str.split(",")).collect(Collectors.toList());
         list.forEach(System.out::println);
+    }
+
+    @Test
+    public void testAA4(){
+
+        Map<String,String> map = new HashMap<>();
+        map.put("11","22");
+        map.put("22","33");
+        map.put("33","44");
+        map.put("44","55");
+
+        List<String> list = new ArrayList<>();
+        String str = "22";
+
+        if(!StringUtils.isEmpty(map.get(str))){
+            getPreData(list,map,map.get(str));
+        }
+        list.forEach(System.out::println);
+    }
+
+    private void getPreData(List<String> list, Map<String, String> map, String str) {
+        if(!StringUtils.isEmpty(map.get(str))){
+            list.add(map.get(str));
+            getPreData(list,map,map.get(str));
+        }
     }
 
 
